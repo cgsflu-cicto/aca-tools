@@ -1,18 +1,26 @@
 <# :
-@echo off & cd /d "%~dp0" & cls
-powershell -NoProfile -ExecutionPolicy Bypass -Command "iex (gc '%~f0' -Raw)"
-pause & exit /b
+@echo off
+setlocal
+set "SCRIPT_DIR=%~dp0"
+set "SCRIPT_FILE=%~f0"
+cls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "iex (Get-Content -LiteralPath $env:SCRIPT_FILE -Raw)"
+set "exitCode=%ERRORLEVEL%"
+pause
+exit /b %exitCode%
 #>
 
 $xlUp = -4162
+$scriptDirectory = $env:SCRIPT_DIR
 
 Write-Host "Please wait for the conversion process to finish...`n" -ForegroundColor Blue
 
 $excel = New-Object -ComObject Excel.Application
 
 try {
-    Get-ChildItem -Filter "*.xls*" | ForEach-Object {
+    Get-ChildItem -LiteralPath $scriptDirectory -Filter "*.xls*" -File | ForEach-Object {
         $file = "$($_.BaseName).csv"
+        $outputPath = Join-Path $scriptDirectory $file
         $path = $_.FullName
         $book = $null
         $sheet = $null
@@ -23,8 +31,8 @@ try {
             $rowCount = ($sheet.Rows.Count)
             $rowLast = (@('A','B','C') | ForEach-Object { ($sheet.Range("$_$rowCount").End($xlUp).Row) } | Measure-Object -Maximum).Maximum
 
-            if (Test-Path ".\$file") {
-                Remove-Item ".\$file" -Force -Confirm:$false
+            if (Test-Path -LiteralPath $outputPath) {
+                Remove-Item -LiteralPath $outputPath -Force -Confirm:$false
             }
 
             # Read entire range at once as 2D array - much faster than row-by-row
@@ -46,7 +54,7 @@ try {
             }
             
             # Write all lines at once
-            $outputLines | Out-File ".\$file" -Encoding utf8
+            $outputLines | Out-File -LiteralPath $outputPath -Encoding utf8
         }
         catch {
             Write-Host "Error processing $($_.Name): $_`n" -ForegroundColor Red

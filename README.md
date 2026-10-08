@@ -1,21 +1,24 @@
-# PACS Salary Converter
+# Excel Converters
 
-Converts Excel salary files to CSV format.
+This repository contains two Windows tools for converting Excel workbooks:
+
+- **PACS converter** (`pacs-converter/ConvertAll.bat`) creates CSV files.
+- **ACIC converter** (`acic-converter/ConvertAll.bat`) creates ACIC fixed-width text files.
 
 ## Requirements
 
 - Windows with PowerShell 5.1 or higher
 - Microsoft Excel installed
 
-## Usage
+## PACS Converter
 
-1. Place your Excel files (`.xls` or `.xlsx`) in the same folder as `ConvertAll.bat`
-2. Double-click `ConvertAll.bat` to run the conversion
-3. CSV files will be created with the same names as your Excel files
+1. Place the PACS Excel files (`.xls` or `.xlsx`) in the `pacs-converter` folder.
+2. Double-click `pacs-converter/ConvertAll.bat`.
+3. CSV files are created beside the workbooks with the same base names.
 
 ## Excel File Format
 
-Your Excel files should have the following structure:
+PACS workbooks should have these columns in order:
 
 | Account | Name | Amount |
 |---------|------|--------|
@@ -39,3 +42,21 @@ Example:
 ```
 
 **Note**: Amounts are converted to cents (no decimal point).
+
+## ACIC Converter
+
+1. Place the ACIC Excel files (`.xls` or `.xlsx`) in the `acic-converter` folder.
+2. Double-click `acic-converter/ConvertAll.bat`.
+3. The converter finds a worksheet with the required column headers and creates a `.txt` file beside each workbook.
+
+The ACIC worksheet must contain these headers (column order can vary):
+
+| Header | Description |
+|--------|-------------|
+| `AccountNumber` | Account number; converted to a 10-digit field |
+| `CheckNumber` | Check number; converted to a 10-digit field |
+| `CheckAmount` | Check amount; written in cents |
+| `Payee` | Payee name, up to 40 characters |
+| `CheckDate` | Check date; written as `MMddyyyy` |
+
+The ACIC output uses 105-character detail records followed by a totals record. The converter skips worksheets that do not contain all five headers and reports a warning if no matching worksheet is found in a workbook.
